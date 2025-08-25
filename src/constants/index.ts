@@ -1,14 +1,9 @@
-// Application Constants
-// Based on SocialApp and SocialServer constants
-
-// ===== API CONSTANTS =====
 export const API_CONFIG = {
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
-    SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8080',
+    BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
     TIMEOUT: 10000,
 };
 
-// ===== MESSAGE TYPES =====
+
 export const MESSAGE_TYPE = {
     TEXT: 'TEXT',
     IMAGE: 'IMAGE',
