@@ -9,10 +9,10 @@ export function getToken(): string | null {
     }
 }
 
-export function setToken(token: string | null) {
+export function removeToken() {
     if (typeof window === 'undefined') return
     try {
-        if (token) window.localStorage.setItem(TOKEN_KEY, token)
-        else window.localStorage.removeItem(TOKEN_KEY)
-    } catch { }
-}
+      window.localStorage.removeItem(TOKEN_KEY)
+    } catch {}
+  }
+  

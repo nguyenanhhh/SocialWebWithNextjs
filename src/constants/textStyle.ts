@@ -2,7 +2,6 @@ import { CSSProperties } from 'react';
 import Colors from '@/constants/color';
 
 const TextStyles: Record<string, CSSProperties> = {
-    // Typography System
     displayLarge: {
         fontSize: '32px',
         fontWeight: 700,

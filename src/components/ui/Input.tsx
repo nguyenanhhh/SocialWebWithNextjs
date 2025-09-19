@@ -1,81 +1,22 @@
-import React from 'react';
-import Colors from '@/constants/color';
+import * as React from "react"
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: boolean;
-  errorMessage?: string;
-  label?: string;
-  helperText?: string;
-}
+import { cn } from "@/lib/utils"
 
-const Input: React.FC<InputProps> = ({
-  error = false,
-  errorMessage,
-  label,
-  helperText,
-  className = '',
-  style = {},
-  ...props
-}) => {
-  const baseStyles = {
-    width: '100%',
-    border: `1px solid ${error ? Colors.danger : Colors.borderPrimary}`,
-    borderRadius: '6px',
-    padding: '14px 16px',
-    fontSize: '17px',
-    backgroundColor: Colors.bgPrimary,
-    color: Colors.textPrimary,
-    transition: 'all 0.2s ease-in-out',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-  };
-
-  const combinedStyles = {
-    ...baseStyles,
-    ...style,
-  };
-
-  return (
-    <div style={{ width: '100%' }}>
-      {label && (
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          fontSize: '15px',
-          fontWeight: 600,
-          color: Colors.textPrimary,
-        }}>
-          {label}
-        </label>
-      )}
-
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
+    return (
       <input
-        style={combinedStyles}
-        className={className}
+        type={type}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
+        )}
+        ref={ref}
         {...props}
       />
+    )
+  }
+)
+Input.displayName = "Input"
 
-      {helperText && !error && (
-        <p style={{
-          marginTop: '4px',
-          fontSize: '13px',
-          color: Colors.textPrimary,
-        }}>
-          {helperText}
-        </p>
-      )}
-
-      {error && errorMessage && (
-        <p style={{
-          marginTop: '4px',
-          fontSize: '13px',
-          color: Colors.danger,
-        }}>
-          {errorMessage}
-        </p>
-      )}
-    </div>
-  );
-};
-
-export default Input;
+export { Input }

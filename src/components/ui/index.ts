@@ -1,6 +1,7 @@
-export { default as Button } from './Button';
-export { default as Input } from './Input';
-export { default as Label } from './Label';
-export { default as Card } from './Card';
-export { default as Divider } from './Divider';
-export { default as Icon } from './Icon';
+export { Button } from './button'
+export { Input } from './input'
+export { Label } from './label'
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card'
+export { default as Divider } from './Divider'
+export { default as Icon } from './Icon'
+export { Separator } from './separator'

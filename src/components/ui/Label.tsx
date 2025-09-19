@@ -1,36 +1,26 @@
-import React from 'react';
-import Colors from '@/constants/color';
-import TextStyles from '@/constants/textStyle';
+"use client"
 
-interface LabelProps {
-    children: React.ReactNode;
-    htmlFor?: string;
-    required?: boolean;
-    className?: string;
-    style?: React.CSSProperties;
-}
+import * as React from "react"
+import * as LabelPrimitive from "@radix-ui/react-label"
+import { cva, type VariantProps } from "class-variance-authority"
 
-const Label: React.FC<LabelProps> = ({
-    children,
-    htmlFor,
-    required = false,
-    className = '',
-    style = {},
-}) => {
-    const baseStyle: React.CSSProperties = {
-        marginBottom: '0.25rem',
-        display: 'block',
-        color: Colors.primaryDark,
-        ...TextStyles.systemLight_14,
-        ...style,
-    };
+import { cn } from "@/lib/utils"
 
-    return (
-        <label htmlFor={htmlFor} style={baseStyle} className={className}>
-            {children}
-            {required && <span style={{ color: Colors.danger, marginLeft: '0.25rem' }}>*</span>}
-        </label>
-    );
-};
+const labelVariants = cva(
+  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+)
 
-export default Label;
+const Label = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
+    VariantProps<typeof labelVariants>
+>(({ className, ...props }, ref) => (
+  <LabelPrimitive.Root
+    ref={ref}
+    className={cn(labelVariants(), className)}
+    {...props}
+  />
+))
+Label.displayName = LabelPrimitive.Root.displayName
+
+export { Label }
