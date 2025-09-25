@@ -104,7 +104,8 @@ export interface Comment {
   avatar?: string
   content: string
   parentID?: string // for replies
-  reactionsCount: number
+  reactions?: string[] // array of userIDs who reacted
+  reactionsCount?: number // deprecated, use reactions.length instead
   createdAt: string
   updatedAt: string
 }
@@ -188,7 +189,6 @@ export interface Group {
   updatedAt: string
 }
 
-// API Response Types
 export interface ApiResponse<T> {
   state: 'SUCCESS' | 'ERROR'
   message?: string
@@ -202,7 +202,6 @@ export interface PaginatedResponse<T> {
   limit: number
 }
 
-// Socket Event Types
 export interface SocketEvents {
   connection: (data: { data: { userID: string } }) => void
   disconnect: () => void
@@ -230,7 +229,6 @@ export interface SocketEvents {
   postCreated: (data: Post) => void
 }
 
-// Form Types
 export interface LoginForm {
   email: string
   password: string

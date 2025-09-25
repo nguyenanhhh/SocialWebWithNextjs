@@ -1,8 +1,8 @@
-import { api } from './client'
+import { api, apiClient } from './client'
 import type { Post, Comment, Reaction, CreatePostForm, ApiResponse } from '@/types'
 
 export const postsApi = {
-    // Posts CRUD
+
     getNewfeed: (userID: string) =>
         api.get<Post[]>(`/post/newfeed/${userID}`),
 
@@ -32,8 +32,8 @@ export const postsApi = {
                 formData.append('attachments', file)
             })
         }
-
-        return api.post<Post>('/post/store', formData, {
+        return api.post<Post>('/post/store', {
+            data: formData,
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -41,7 +41,10 @@ export const postsApi = {
     },
 
     edit: (id: string, data: Partial<Post>) =>
-        api.put<Post>(`/post/${id}/edit`, data),
+        api.put<Post>(`/post/${id}/edit`, { ...data, action: 'UPDATE_CONTENT' }),
+
+    editWithAttachments: (id: string, data: Partial<Post>) =>
+        api.put<Post>(`/post/${id}/edit`, { ...data, action: 'UPDATE_ALL' }),
 
     deleteMany: (ids: string[]) =>
         api.put<{ deleted: number }>('/post/delete', { ids }),
@@ -68,11 +71,11 @@ export const commentsApi = {
 }
 
 export const reactionsApi = {
-    createReaction: (data: { targetID: string; type: 'POST' | 'COMMENT'; emoji: string }) =>
+    createReaction: (data: { targetID: string; userID: string; userName: string; avatar: string; type: 'POST' | 'COMMENT'; emoji: string }) =>
         api.post<Reaction>('/reaction/store', data),
 
-    deleteReaction: (targetID: string, type: 'POST' | 'COMMENT') =>
-        api.delete<{ success: boolean }>(`/reaction/${targetID}/${type}`),
+    deleteReaction: (targetID: string, type: 'POST' | 'COMMENT', userID: string) =>
+        apiClient.delete<{ success: boolean }>(`/reaction/${targetID}/${type}`, { data: { userID } }),
 
     getPostReactions: (postID: string) =>
         api.get<Reaction[]>(`/reaction/post/${postID}`),

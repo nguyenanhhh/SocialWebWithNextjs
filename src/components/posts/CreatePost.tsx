@@ -42,16 +42,16 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
         setLoading(true);
 
         try {
-            
+
             const formData = new FormData();
             formData.append('content', content);
             formData.append('scope', scope);
             formData.append('userID', user._id);
-            
+
             if (groupID) {
                 formData.append('groupID', groupID);
             }
-            
+
             attachments.forEach(file => {
                 formData.append('attachments', file);
             });
@@ -77,7 +77,7 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
 
             const socket = getSocket();
             if (socket && socket.connected) {
-                socket.emit('newPost', result.data);
+                socket.emit('postCreated', result.data);
             }
             setContent('');
             setAttachments([]);
@@ -96,6 +96,12 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         const validFiles = files.filter(file => {
+            // Kiểm tra loại file
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+                showError('Chỉ cho phép file ảnh và video');
+                return false;
+            }
+            // Kiểm tra kích thước
             if (file.size > 10 * 1024 * 1024) {
                 showError('File quá lớn (tối đa 10MB)');
                 return false;
@@ -104,6 +110,10 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
         });
 
         setAttachments(prev => [...prev, ...validFiles]);
+        // Reset input để có thể chọn cùng file lần nữa
+        if (e.target) {
+            e.target.value = '';
+        }
     };
 
     const removeAttachment = (index: number) => {
@@ -114,6 +124,14 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
         if (file.type.startsWith('image/')) return <Image size={20} />;
         if (file.type.startsWith('video/')) return <Video size={20} />;
         return <Tag size={20} />;
+    };
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
     return (
@@ -177,20 +195,30 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
                                         padding: '8px 12px',
                                         backgroundColor: Colors.bgSecondary,
                                         borderRadius: '6px',
-                                        border: `1px solid ${Colors.borderPrimary}`
+                                        border: `1px solid ${Colors.borderPrimary}`,
+                                        minWidth: '200px'
                                     }}
                                 >
                                     {getFileIcon(file)}
-                                    <span style={{
-                                        fontSize: '14px',
-                                        color: Colors.textPrimary,
-                                        maxWidth: '150px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}>
-                                        {file.name}
-                                    </span>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            color: Colors.textPrimary,
+                                            fontWeight: '500',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            {file.name}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: Colors.textSecondary,
+                                            marginTop: '2px'
+                                        }}>
+                                            {formatFileSize(file.size)}
+                                        </div>
+                                    </div>
                                     <button
                                         type="button"
                                         onClick={() => removeAttachment(index)}
@@ -199,7 +227,17 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
                                             border: 'none',
                                             color: Colors.textSecondary,
                                             cursor: 'pointer',
-                                            padding: '2px'
+                                            padding: '4px',
+                                            borderRadius: '4px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = Colors.bgPrimary;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'transparent';
                                         }}
                                     >
                                         ×

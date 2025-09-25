@@ -5,30 +5,22 @@ import { Post } from '@/types';
 import useAuthStore from '@/store/authStore';
 import { useNewfeedPosts } from '@/hooks';
 import { useSocket } from '@/hooks/useSocket';
-import Colors from '@/constants/color';
-import TextStyles from '@/constants/textStyle';
 import { Button } from '@/components/ui/button';
 import CreatePost from '@/components/posts/CreatePost';
 import PostCard from '@/components/posts/PostCard';
 import { 
   RefreshCw, 
-  Heart, 
-  MessageCircle, 
-  Share, 
-  MoreHorizontal, 
-  Globe, 
-  Users, 
-  Lock,
   Search,
   Bell,
   User,
   Home,
+  Users,
+  MessageCircle,
   Settings,
   Plus,
   TrendingUp,
   LogOut
 } from 'lucide-react';
-import AppLayout from '@/components/layout/AppLayout';
 
 export default function HomePage() {
     const router = useRouter();
@@ -39,7 +31,10 @@ export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [showCreatePost, setShowCreatePost] = useState(false);
 
-    // Redirect to login if not authenticated
+    // Debug posts state changes
+    useEffect(() => {
+        console.log('Posts state changed:', posts.length, 'posts');
+    }, [posts]);
     useEffect(() => {
         if (!isAuthenticated) {
             router.push('/login');
@@ -48,7 +43,10 @@ export default function HomePage() {
 
     useEffect(() => {
         if (data) {
-            setPosts(data.data);
+            console.log('API data received:', data);
+            const postsData = Array.isArray(data) ? data : data.data || [];
+            console.log('Setting posts:', postsData);
+            setPosts(postsData);
         }
     }, [data]);
 
@@ -57,6 +55,15 @@ export default function HomePage() {
 
         const handleNewPost = (data: { post: Post }) => {
             setPosts(prev => [data.post, ...(prev || [])]);
+        };
+
+        const handlePostCreated = (data: Post) => {
+            console.log('Socket postCreated received:', data);
+            setPosts(prev => {
+                const newPosts = [data, ...(prev || [])];
+                console.log('Updated posts after socket event:', newPosts);
+                return newPosts;
+            });
         };
 
         const handlePostUpdate = (data: { post: Post }) => {
@@ -68,11 +75,13 @@ export default function HomePage() {
         };
 
         socket.on('emitAddPost', handleNewPost);
+        socket.on('postCreated', handlePostCreated);
         socket.on('emitEditPost', handlePostUpdate);
         socket.on('emitRemovePost', handlePostDelete);
 
         return () => {
             socket.off('emitAddPost', handleNewPost);
+            socket.off('postCreated', handlePostCreated);
             socket.off('emitEditPost', handlePostUpdate);
             socket.off('emitRemovePost', handlePostDelete);
         };
@@ -89,10 +98,15 @@ export default function HomePage() {
 
     const handlePostCreated = () => {
         setShowCreatePost(false);
-        refetch();
+        // Không cần refetch vì socket event đã cập nhật UI
+        // refetch();
     };
 
     const handlePostUpdate = (updatedPost: Post) => {
+        if (!updatedPost || !updatedPost._id) {
+            console.error('Invalid post data received:', updatedPost);
+            return;
+        }
         setPosts(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
     };
 
@@ -100,251 +114,97 @@ export default function HomePage() {
         setPosts(prev => prev.filter(p => p._id !== postId));
     };
 
-    const getScopeIcon = (scope: string) => {
-        switch (scope) {
-            case 'PUBLIC':
-                return <Globe size={16} />;
-            case 'FRIEND':
-                return <Users size={16} />;
-            case 'PRIVATE':
-                return <Lock size={16} />;
-            default:
-                return <Globe size={16} />;
-        }
-    };
-
-    const getScopeText = (scope: string) => {
-        switch (scope) {
-            case 'PUBLIC':
-                return 'Công khai';
-            case 'FRIEND':
-                return 'Bạn bè';
-            case 'PRIVATE':
-                return 'Riêng tư';
-            default:
-                return 'Công khai';
-        }
-    };
 
     if (!isAuthenticated) {
-        return <div>Loading...</div>;
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
     return (
-        <div style={{
-            minHeight: "100vh",
-            backgroundColor: Colors.bgSecondary,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        }}>
-                {/* Header */}
-            <header style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 100,
-                backgroundColor: Colors.bgPrimary,
-                borderBottom: `1px solid ${Colors.borderPrimary}`,
-                boxShadow: `0 2px 8px ${Colors.shadowLight}`
-            }}>
-                <div style={{
-                    maxWidth: "1200px",
-                    margin: "0 auto",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "12px 20px"
-                }}>
-                    {/* Logo */}
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px"
-                    }}>
-                        <div style={{
-                            width: "32px",
-                            height: "32px",
-                            backgroundColor: Colors.primary,
-                            borderRadius: "8px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: Colors.white,
-                            fontWeight: "700",
-                            fontSize: "16px"
-                        }}>
+        <div className="min-h-screen bg-gray-50 font-sans">
+            <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+                <div className="max-w-6xl mx-auto flex items-center justify-between px-5 py-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-base">
                             S
                         </div>
-                        <h1 style={{
-                            ...TextStyles.headingMedium,
-                            color: Colors.textPrimary,
-                            margin: "0"
-                        }}>
+                        <h1 className="text-lg font-semibold text-gray-900 m-0">
                             SocialWeb
                         </h1>
                     </div>
 
-                    {/* Search Bar */}
-                    <div style={{
-                        flex: "1",
-                        maxWidth: "400px",
-                        margin: "0 20px",
-                        position: "relative"
-                    }}>
-                        <div style={{
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center"
-                        }}>
+                    <div className="flex-1 max-w-md mx-5 relative">
+                        <div className="relative flex items-center">
                             <Search
                                 size={20}
-                                style={{
-                                    position: "absolute",
-                                    left: "12px",
-                                    color: Colors.textSecondary
-                                }}
+                                className="absolute left-3 text-gray-400"
                             />
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm..."
-                                style={{
-                                    width: "100%",
-                                    padding: "10px 12px 10px 40px",
-                                    border: `1px solid ${Colors.borderSecondary}`,
-                                    borderRadius: "20px",
-                                    backgroundColor: Colors.bgSecondary,
-                                    fontSize: "14px",
-                                    outline: "none",
-                                    transition: "all 0.2s ease"
-                                }}
-                                onFocus={(e) => {
-                                    (e.target as HTMLInputElement).style.borderColor = Colors.primary;
-                                    (e.target as HTMLInputElement).style.backgroundColor = Colors.white;
-                                }}
-                                onBlur={(e) => {
-                                    (e.target as HTMLInputElement).style.borderColor = Colors.borderSecondary;
-                                    (e.target as HTMLInputElement).style.backgroundColor = Colors.bgSecondary;
-                                }}
+                                className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-full bg-gray-100 text-sm outline-none transition-all duration-200 focus:border-blue-600 focus:bg-white"
                             />
                         </div>
                     </div>
 
-                    {/* Navigation Icons */}
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px"
-                    }}>
+                    <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"
                             size="icon"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px"
-                            }}
+                            className="w-10 h-10 rounded-full"
                         >
-                            <Home size={20} color={Colors.textPrimary} />
+                            <Home size={20} className="text-gray-900" />
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px"
-                            }}
+                            className="w-10 h-10 rounded-full"
                         >
-                            <Users size={20} color={Colors.textSecondary} />
+                            <Users size={20} className="text-gray-500" />
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px"
-                            }}
+                            className="w-10 h-10 rounded-full"
                         >
-                            <MessageCircle size={20} color={Colors.textSecondary} />
+                            <MessageCircle size={20} className="text-gray-500" />
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px",
-                                position: "relative"
-                            }}
+                            className="w-10 h-10 rounded-full relative"
                         >
-                            <Bell size={20} color={Colors.textSecondary} />
-                            <div style={{
-                                position: "absolute",
-                                top: "8px",
-                                right: "8px",
-                                width: "8px",
-                                height: "8px",
-                                backgroundColor: Colors.danger,
-                                borderRadius: "50%"
-                            }}></div>
+                            <Bell size={20} className="text-gray-500" />
+                            <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px"
-                            }}
+                            className="w-10 h-10 rounded-full"
                         >
-                            <User size={20} color={Colors.textSecondary} />
+                            <User size={20} className="text-gray-500" />
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleLogout}
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "20px"
-                            }}
+                            className="w-10 h-10 rounded-full"
                             title="Đăng xuất"
                         >
-                            <LogOut size={20} color={Colors.textSecondary} />
+                            <LogOut size={20} className="text-gray-500" />
                         </Button>
                     </div>
                 </div>
             </header>
 
-            {/* Main Content */}
-            <div style={{
-                maxWidth: "1200px",
-                margin: "0 auto",
-                display: "flex",
-                gap: "20px",
-                padding: "20px"
-            }}>
-                {/* Left Sidebar */}
-                <aside style={{
-                    width: "280px",
-                    flexShrink: 0
-                }}>
-                    <div style={{
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: "12px",
-                        padding: "16px",
-                        marginBottom: "20px",
-                        boxShadow: `0 2px 4px ${Colors.shadowLight}`
-                    }}>
-                        <h3 style={{
-                            ...TextStyles.headingSmall,
-                            color: Colors.textPrimary,
-                            margin: "0 0 12px 0"
-                        }}>
+            <div className="max-w-6xl mx-auto flex gap-5 p-5">
+                <aside className="w-70 flex-shrink-0">
+                    <div className="bg-white rounded-xl p-4 mb-5 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900 mb-3 m-0">
                             Menu
                         </h3>
 
@@ -362,38 +222,17 @@ export default function HomePage() {
                                     <button
                                         key={item.id}
                                         onClick={item.onClick || (() => {})}
-                                        style={{
-                                            width: "100%",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "12px",
-                                            padding: "10px 12px",
-                                            border: "none",
-                                            backgroundColor: item.active ? Colors.bgSecondary : "transparent",
-                                            borderRadius: "8px",
-                                            cursor: "pointer",
-                                            transition: "all 0.2s ease",
-                                            marginBottom: "4px",
-                                            color: item.id === 'logout' ? Colors.danger : 'inherit'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            const button = e.target as HTMLButtonElement;
-                                            button.style.backgroundColor = Colors.bgSecondary;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            const button = e.target as HTMLButtonElement;
-                                            button.style.backgroundColor = "transparent";
-                                        }}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 border-none rounded-lg cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 ${
+                                            item.active ? 'bg-gray-100' : 'bg-transparent'
+                                        } ${item.id === 'logout' ? 'text-red-600' : ''}`}
                                     >
                                         <IconComponent
                                             size={20}
-                                            color={item.id === 'logout' ? Colors.danger : (item.active ? Colors.primary : Colors.textSecondary)}
+                                            className={item.id === 'logout' ? 'text-red-600' : (item.active ? 'text-blue-600' : 'text-gray-500')}
                                         />
-                                        <span style={{
-                                            fontSize: "14px",
-                                            fontWeight: item.active ? "600" : "400",
-                                            color: item.id === 'logout' ? Colors.danger : (item.active ? Colors.primary : Colors.textPrimary)
-                                        }}>
+                                        <span className={`text-sm ${
+                                            item.active ? 'font-semibold text-blue-600' : 'font-normal text-gray-900'
+                                        } ${item.id === 'logout' ? 'text-red-600' : ''}`}>
                                             {item.label}
                                         </span>
                                     </button>
@@ -402,73 +241,32 @@ export default function HomePage() {
                         </nav>
                     </div>
 
-                    {/* Trending Topics */}
-                    <div style={{
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: "12px",
-                        padding: "16px",
-                        boxShadow: `0 2px 4px ${Colors.shadowLight}`
-                    }}>
-                        <h3 style={{
-                            ...TextStyles.headingSmall,
-                            color: Colors.textPrimary,
-                            margin: "0 0 12px 0"
-                        }}>
+                    <div className="bg-white rounded-xl p-4 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900 mb-3 m-0">
                             Xu hướng
                         </h3>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            <div style={{
-                                textAlign: "center",
-                                padding: "20px",
-                                color: Colors.textSecondary,
-                                fontSize: "14px"
-                            }}>
+                        <div className="flex flex-col gap-2">
+                            <div className="text-center py-5 text-gray-500 text-sm">
                                 Chưa có xu hướng nào
                             </div>
                         </div>
                     </div>
                 </aside>
 
-                {/* Main Feed */}
-                <main style={{
-                    flex: "1",
-                    maxWidth: "680px"
-                }}>
-                    {/* Create Post */}
+                <main className="flex-1 max-w-2xl">
                     {showCreatePost ? (
                         <CreatePost onPostCreated={handlePostCreated} />
                     ) : (
-                        <div style={{
-                            backgroundColor: Colors.bgPrimary,
-                            borderRadius: "12px",
-                            padding: "16px",
-                            marginBottom: "20px",
-                            boxShadow: `0 2px 4px ${Colors.shadowLight}`,
-                            cursor: "pointer"
-                        }}
-                        onClick={() => setShowCreatePost(true)}
+                        <div 
+                            className="bg-white rounded-xl p-4 mb-5 shadow-sm cursor-pointer"
+                            onClick={() => setShowCreatePost(true)}
                         >
-                            <div style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "12px"
-                            }}>
-                                <div style={{
-                                    width: "40px",
-                                    height: "40px",
-                                    backgroundColor: Colors.bgSecondary,
-                                    borderRadius: "50%",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
-                                    <Plus size={20} color={Colors.textSecondary} />
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <Plus size={20} className="text-gray-500" />
                                 </div>
-                                <span style={{
-                                    ...TextStyles.bodyMedium,
-                                    color: Colors.textSecondary
-                                }}>
+                                <span className="text-sm text-gray-500">
                                     Bạn đang nghĩ gì?
                                 </span>
                             </div>
@@ -484,139 +282,69 @@ export default function HomePage() {
                             alignItems: 'center',
                             marginBottom: '24px'
                         }}>
-                            <h2 style={{
-                                ...TextStyles.headingLarge,
-                                color: Colors.textPrimary,
-                                margin: "0"
-                            }}>
+                            <h2 className="text-xl font-bold text-gray-900 m-0">
                                 Trang chủ
                             </h2>
                             <button
                                 onClick={handleRefresh}
                                 disabled={isLoading}
-                                style={{
-                                    padding: "8px 16px",
-                                    backgroundColor: Colors.primary,
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "8px",
-                                    opacity: isLoading ? 0.7 : 1,
-                                    transition: "all 0.2s ease",
-                                    fontSize: "14px",
-                                    fontWeight: "500"
-                                }}
+                                className="px-4 py-2 bg-blue-600 text-white border-none rounded-lg cursor-pointer flex items-center gap-2 opacity-70 transition-all duration-200 text-sm font-medium hover:opacity-100 disabled:opacity-50"
                             >
                                 <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
                                 Làm mới
                             </button>
                 </div>
 
-                {/* Posts */}
-                {isLoading ? (
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '200px'
-                    }}>
-                        <RefreshCw size={24} className="animate-spin" />
-                        <span style={{ marginLeft: '8px' }}>Đang tải...</span>
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-50">
+                                <RefreshCw size={24} className="animate-spin" />
+                                <span className="ml-2">Đang tải...</span>
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-10 text-gray-500">
+                                Có lỗi xảy ra khi tải dữ liệu
+                            </div>
+                        ) : !posts || posts.length === 0 ? (
+                            <div className="text-center py-10 bg-white rounded-xl shadow-sm">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <TrendingUp size={32} className="text-gray-500" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    Chưa có bài viết nào
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-5">
+                                    Hãy theo dõi bạn bè hoặc tạo bài viết đầu tiên!
+                                </p>
+                                <Button
+                                    variant="default"
+                                    onClick={() => setShowCreatePost(true)}
+                                >
+                                    Tạo bài viết
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                {posts?.map((post) => (
+                                    <PostCard
+                                        key={post._id}
+                                        post={post}
+                                        onUpdate={handlePostUpdate}
+                                        onDelete={handlePostDelete}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
-                ) : error ? (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '40px',
-                        color: Colors.textSecondary
-                    }}>
-                        Có lỗi xảy ra khi tải dữ liệu
-                    </div>
-                ) : !posts || posts.length === 0 ? (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '40px',
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: '12px',
-                        boxShadow: `0 2px 4px ${Colors.shadowLight}`
-                    }}>
-                        <div style={{
-                            width: '64px',
-                            height: '64px',
-                            backgroundColor: Colors.bgSecondary,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 16px'
-                        }}>
-                            <TrendingUp size={32} color={Colors.textSecondary} />
-                        </div>
-                        <h3 style={{
-                            ...TextStyles.headingMedium,
-                            color: Colors.textPrimary,
-                            marginBottom: '8px'
-                        }}>
-                            Chưa có bài viết nào
-                        </h3>
-                        <p style={{
-                            ...TextStyles.bodyMedium,
-                            color: Colors.textSecondary,
-                            marginBottom: '20px'
-                        }}>
-                            Hãy theo dõi bạn bè hoặc tạo bài viết đầu tiên!
-                        </p>
-                        <Button
-                            variant="default"
-                            onClick={() => setShowCreatePost(true)}
-                        >
-                            Tạo bài viết
-                        </Button>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {posts?.map((post) => (
-                            <PostCard
-                                key={post._id}
-                                post={post}
-                                onUpdate={handlePostUpdate}
-                                onDelete={handlePostDelete}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
                 </main>
 
-                {/* Right Sidebar */}
-                <aside style={{
-                    width: "280px",
-                    flexShrink: 0
-                }}>
-                    {/* Online Friends */}
-                    <div style={{
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: "12px",
-                        padding: "16px",
-                        boxShadow: `0 2px 4px ${Colors.shadowLight}`
-                    }}>
-                        <h3 style={{
-                            ...TextStyles.headingSmall,
-                            color: Colors.textPrimary,
-                            margin: "0 0 12px 0"
-                        }}>
+                <aside className="w-70 flex-shrink-0">
+                    <div className="bg-white rounded-xl p-4 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900 mb-3 m-0">
                             Bạn bè đang online
                         </h3>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                            <div style={{
-                                textAlign: "center",
-                                padding: "20px",
-                                color: Colors.textSecondary,
-                                fontSize: "14px"
-                            }}>
+                        <div className="flex flex-col gap-3">
+                            <div className="text-center py-5 text-gray-500 text-sm">
                                 Chưa có bạn bè online
                             </div>
                         </div>
@@ -624,8 +352,7 @@ export default function HomePage() {
                 </aside>
             </div>
 
-            {/* Bottom Spacer */}
-            <div style={{ height: "40px" }} />
+            <div className="h-10" />
         </div>
     );
 }

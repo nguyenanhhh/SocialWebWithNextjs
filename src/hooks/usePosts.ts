@@ -6,6 +6,9 @@ export const useNewfeedPosts = (userID?: string) => {
         queryKey: ['posts', 'newfeed', userID],
         queryFn: () => postsApi.getNewfeed(userID as string),
         enabled: !!userID,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        staleTime: 5 * 60 * 1000,
     })
 }
 
