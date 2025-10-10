@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { postsApi } from '@/api'
 
 export const useNewfeedPosts = (userID?: string) => {
@@ -8,6 +8,24 @@ export const useNewfeedPosts = (userID?: string) => {
         enabled: !!userID,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
+        staleTime: 5 * 60 * 1000,
+    })
+}
+
+export const useInfiniteNewfeed = (userID?: string) => {
+    return useInfiniteQuery({
+        queryKey: ['posts', 'newfeed-infinite', userID],
+        queryFn: async ({ pageParam = 1 }) => {
+            const res = await postsApi.getNewfeed(userID as string, { page: pageParam, limit: 10 });
+            return Array.isArray(res) ? { data: res, total: res.length, page: 1, limit: 10 } : res;
+        },
+        enabled: !!userID,
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, pages) => {
+            const data = Array.isArray(lastPage?.data) ? lastPage.data : [];
+            return data.length === 10 ? pages.length + 1 : undefined;
+        },
+        refetchOnWindowFocus: false,
         staleTime: 5 * 60 * 1000,
     })
 }

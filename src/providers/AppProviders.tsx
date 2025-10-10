@@ -11,7 +11,7 @@ export default function AppProviders({ children }: { children: React.ReactNode }
   React.useEffect(() => {
     const socket = getSocket();
     if (userId) {
-      socket.emit('connection', { userID: userId });
+ socket.emit('connection', { data: { userID: userId } });
     }
     return () => {};
   }, [userId]);

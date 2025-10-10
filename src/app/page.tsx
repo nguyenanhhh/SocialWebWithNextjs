@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useInView } from 'react-intersection-observer';
 import { Post } from '@/types';
 import useAuthStore from '@/store/authStore';
-import { useNewfeedPosts } from '@/hooks';
+import { useInfiniteNewfeed } from '@/hooks';
 import { useSocket } from '@/hooks/useSocket';
 import { Button } from '@/components/ui/button';
 import CreatePost from '@/components/posts/CreatePost';
@@ -19,22 +20,27 @@ import {
   Settings,
   Plus,
   TrendingUp,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react';
 
 export default function HomePage() {
     const router = useRouter();
     const { user, isAuthenticated, logout } = useAuthStore();
     const userID = user?._id;
-    const { data, isLoading, error, refetch } = useNewfeedPosts(userID);
+    const { 
+        data, 
+        isLoading, 
+        error, 
+        fetchNextPage, 
+        hasNextPage, 
+        isFetchingNextPage
+    } = useInfiniteNewfeed(userID);
     const socket = useSocket();
     const [posts, setPosts] = useState<Post[]>([]);
     const [showCreatePost, setShowCreatePost] = useState(false);
+    const { ref: loadMoreRef, inView } = useInView();
 
-    // Debug posts state changes
-    useEffect(() => {
-        console.log('Posts state changed:', posts.length, 'posts');
-    }, [posts]);
     useEffect(() => {
         if (!isAuthenticated) {
             router.push('/login');
@@ -43,35 +49,32 @@ export default function HomePage() {
 
     useEffect(() => {
         if (data) {
-            console.log('API data received:', data);
-            const postsData = Array.isArray(data) ? data : data.data || [];
-            console.log('Setting posts:', postsData);
-            setPosts(postsData);
+            const allPosts = data.pages.flatMap(page => page.data || []);
+            setPosts(allPosts);
         }
     }, [data]);
+
+    useEffect(() => {
+        if (inView && hasNextPage) fetchNextPage();
+    }, [inView, hasNextPage, fetchNextPage]);
 
     useEffect(() => {
         if (!socket) return;
 
         const handleNewPost = (data: { post: Post }) => {
-            setPosts(prev => [data.post, ...(prev || [])]);
+            setPosts(prev => prev.some(p => p._id === data.post._id) ? prev : [data.post, ...prev]);
         };
 
         const handlePostCreated = (data: Post) => {
-            console.log('Socket postCreated received:', data);
-            setPosts(prev => {
-                const newPosts = [data, ...(prev || [])];
-                console.log('Updated posts after socket event:', newPosts);
-                return newPosts;
-            });
+            setPosts(prev => prev.some(p => p._id === data._id) ? prev : [data, ...prev]);
         };
 
         const handlePostUpdate = (data: { post: Post }) => {
-            setPosts(prev => (prev || []).map(p => p._id === data.post._id ? data.post : p));
+            setPosts(prev => prev.map(p => p._id === data.post._id ? data.post : p));
         };
 
         const handlePostDelete = (data: { postID: string }) => {
-            setPosts(prev => (prev || []).filter(p => p._id !== data.postID));
+            setPosts(prev => prev.filter(p => p._id !== data.postID));
         };
 
         socket.on('emitAddPost', handleNewPost);
@@ -87,10 +90,6 @@ export default function HomePage() {
         };
     }, [socket]);
 
-    const handleRefresh = async () => {
-        await refetch();
-    };
-
     const handleLogout = () => {
         logout();
         router.push('/login');
@@ -98,15 +97,10 @@ export default function HomePage() {
 
     const handlePostCreated = () => {
         setShowCreatePost(false);
-        // Không cần refetch vì socket event đã cập nhật UI
-        // refetch();
     };
 
     const handlePostUpdate = (updatedPost: Post) => {
-        if (!updatedPost || !updatedPost._id) {
-            console.error('Invalid post data received:', updatedPost);
-            return;
-        }
+        if (!updatedPost?._id) return;
         setPosts(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
     };
 
@@ -150,7 +144,9 @@ export default function HomePage() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => router.push('/')}
                             className="w-10 h-10 rounded-full"
+                            title="Trang chủ"
                         >
                             <Home size={20} className="text-gray-900" />
                         </Button>
@@ -158,7 +154,9 @@ export default function HomePage() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => router.push('/friends')}
                             className="w-10 h-10 rounded-full"
+                            title="Bạn bè"
                         >
                             <Users size={20} className="text-gray-500" />
                         </Button>
@@ -166,7 +164,9 @@ export default function HomePage() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => router.push('/chat')}
                             className="w-10 h-10 rounded-full"
+                            title="Tin nhắn"
                         >
                             <MessageCircle size={20} className="text-gray-500" />
                         </Button>
@@ -174,7 +174,9 @@ export default function HomePage() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => router.push('/notifications')}
                             className="w-10 h-10 rounded-full relative"
+                            title="Thông báo"
                         >
                             <Bell size={20} className="text-gray-500" />
                             <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
@@ -183,7 +185,9 @@ export default function HomePage() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => router.push(`/profile/${user?._id}`)}
                             className="w-10 h-10 rounded-full"
+                            title="Trang cá nhân"
                         >
                             <User size={20} className="text-gray-500" />
                         </Button>
@@ -210,18 +214,24 @@ export default function HomePage() {
 
                         <nav>
                             {[
-                                { id: 'home', label: 'Trang chủ', icon: Home, active: true },
-                                { id: 'friends', label: 'Bạn bè', icon: Users },
-                                { id: 'messages', label: 'Tin nhắn', icon: MessageCircle },
-                                { id: 'notifications', label: 'Thông báo', icon: Bell },
-                                { id: 'settings', label: 'Cài đặt', icon: Settings },
+                                { id: 'home', label: 'Trang chủ', icon: Home, active: true, path: '/' },
+                                { id: 'friends', label: 'Bạn bè', icon: Users, path: '/friends' },
+                                { id: 'messages', label: 'Tin nhắn', icon: MessageCircle, path: '/chat' },
+                                { id: 'notifications', label: 'Thông báo', icon: Bell, path: '/notifications' },
+                                { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
                                 { id: 'logout', label: 'Đăng xuất', icon: LogOut, onClick: handleLogout }
                             ].map((item) => {
                                 const IconComponent = item.icon;
                                 return (
                                     <button
                                         key={item.id}
-                                        onClick={item.onClick || (() => {})}
+                                        onClick={() => {
+                                            if (item.onClick) {
+                                                item.onClick();
+                                            } else if (item.path) {
+                                                router.push(item.path);
+                                            }
+                                        }}
                                         className={`w-full flex items-center gap-3 px-3 py-2.5 border-none rounded-lg cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 ${
                                             item.active ? 'bg-gray-100' : 'bg-transparent'
                                         } ${item.id === 'logout' ? 'text-red-600' : ''}`}
@@ -274,26 +284,13 @@ export default function HomePage() {
                     )}
 
                     {/* Posts Feed */}
-                    <div style={{ marginTop: "20px" }}>
+                    <div className="mt-5">
                         {/* Header */}
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '24px'
-                        }}>
+                        <div className="mb-6">
                             <h2 className="text-xl font-bold text-gray-900 m-0">
                                 Trang chủ
                             </h2>
-                            <button
-                                onClick={handleRefresh}
-                                disabled={isLoading}
-                                className="px-4 py-2 bg-blue-600 text-white border-none rounded-lg cursor-pointer flex items-center gap-2 opacity-70 transition-all duration-200 text-sm font-medium hover:opacity-100 disabled:opacity-50"
-                            >
-                                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                                Làm mới
-                            </button>
-                </div>
+                        </div>
 
                         {isLoading ? (
                             <div className="flex justify-center items-center h-50">
@@ -323,16 +320,29 @@ export default function HomePage() {
                                 </Button>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-4">
-                                {posts?.map((post) => (
-                                    <PostCard
-                                        key={post._id}
-                                        post={post}
-                                        onUpdate={handlePostUpdate}
-                                        onDelete={handlePostDelete}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div className="flex flex-col gap-4">
+                                    {posts?.map((post) => (
+                                        <PostCard
+                                            key={post._id}
+                                            post={post}
+                                            onUpdate={handlePostUpdate}
+                                            onDelete={handlePostDelete}
+                                        />
+                                    ))}
+                                </div>
+
+                                <div ref={loadMoreRef} className="flex justify-center py-4">
+                                    {isFetchingNextPage ? (
+                                        <div className="flex items-center gap-2 text-gray-600">
+                                            <Loader2 size={20} className="animate-spin" />
+                                            <span className="text-sm">Đang tải...</span>
+                                        </div>
+                                    ) : !hasNextPage && posts.length > 0 ? (
+                                        <div className="text-sm text-gray-500">Hết rồi!</div>
+                                    ) : null}
+                                </div>
+                            </>
                         )}
                     </div>
                 </main>

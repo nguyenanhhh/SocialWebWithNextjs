@@ -28,33 +28,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated) {
         return (
-            <div style={{ 
-                display: 'flex', 
-                minHeight: '100vh', 
-                backgroundColor: Colors.bgSecondary,
-                alignItems: 'center',
-                justifyContent: 'center'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <h2 style={{ 
-                        fontSize: '24px', 
-                        fontWeight: 'bold', 
-                        marginBottom: '16px',
-                        color: Colors.textPrimary
-                    }}>
+            <div className="flex min-h-screen bg-gray-100 items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-4 text-gray-900">
                         Vui lòng đăng nhập
                     </h2>
                     <Link 
                         href="/login"
-                        style={{
-                            display: 'inline-block',
-                            padding: '12px 24px',
-                            backgroundColor: Colors.primary,
-                            color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            fontWeight: '500'
-                        }}
+                        className="inline-block px-6 py-3 bg-blue-600 text-white no-underline rounded-lg font-medium hover:bg-blue-700 transition-colors"
                     >
                         Đăng nhập
                     </Link>
@@ -64,249 +45,75 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            minHeight: '100vh', 
-            backgroundColor: Colors.bgSecondary,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        }}>
+        <div className="flex min-h-screen bg-gray-100 font-sans">
             {/* Left Sidebar */}
-            <aside style={{ 
-                width: '280px', 
-                backgroundColor: Colors.bgPrimary, 
-                borderRight: `1px solid ${Colors.borderPrimary}`,
-                position: 'fixed',
-                height: '100vh',
-                overflowY: 'auto',
-                zIndex: 100
-            }}>
-                <div style={{ padding: '24px 20px' }}>
+            <aside className="w-[280px] bg-white border-r border-gray-200 fixed h-screen overflow-y-auto z-[100]">
+                <div className="p-6 px-5">
                     {/* Logo */}
-                    <div style={{ 
-                        marginBottom: '32px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <div style={{
-                            width: '32px',
-                            height: '32px',
-                            background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: Colors.white,
-                            fontWeight: 'bold',
-                            fontSize: '16px'
-                        }}>
+                    <div className="mb-8 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-[#f09433] via-[#dc2743] to-[#bc1888] rounded-lg flex items-center justify-center text-white font-bold text-base">
                             S
                         </div>
-                        <span style={{ 
-                            fontWeight: '700', 
-                            fontSize: '20px', 
-                            color: Colors.textPrimary,
-                            letterSpacing: '-0.5px'
-                        }}>
+                        <span className="font-bold text-xl text-gray-900 tracking-tight">
                             Social UTE
                         </span>
                     </div>
 
                     {/* Navigation */}
-                    <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <Link href="/" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textPrimary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease',
-                            backgroundColor: 'transparent'
-                        }}>
+                    <nav className="flex flex-col gap-1">
+                        <Link href="/" className="px-4 py-3 rounded-lg no-underline text-gray-900 flex items-center gap-4 text-base font-semibold hover:bg-gray-100 transition-colors">
                             <Home size={24} />
                             Trang chủ
                         </Link>
-                        <Link href="/search" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/search" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <Search size={24} />
                             Khám phá
                         </Link>
-                        <Link href="/messages" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/messages" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <MessageCircle size={24} />
                             Tin nhắn
                         </Link>
-                        <Link href="/notifications" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/notifications" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <Heart size={24} />
                             Thông báo
                         </Link>
-                        <Link href="/users" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/users" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <Users size={24} />
                             Người dùng
                         </Link>
-                        <Link href="/groups" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/groups" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <Building2 size={24} />
                             Nhóm
                         </Link>
-                        <Link href="/friends" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/friends" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <UserPlus size={24} />
                             Bạn bè
                         </Link>
-                        <Link href="/profile" style={{ 
-                            padding: '12px 16px', 
-                            borderRadius: '8px', 
-                            textDecoration: 'none', 
-                            color: Colors.textSecondary, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '16px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s ease'
-                        }}>
+                        <Link href="/profile" className="px-4 py-3 rounded-lg no-underline text-gray-600 flex items-center gap-4 text-base font-medium hover:bg-gray-100 transition-colors">
                             <User size={24} />
                             Hồ sơ
                         </Link>
                     </nav>
 
                     {/* Create Post Button */}
-                    <div style={{ marginTop: '24px' }}>
-                        <button style={{
-                            width: '100%',
-                            padding: '12px 16px',
-                            backgroundColor: Colors.primary,
-                            color: Colors.white,
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                        }}>
+                    <div className="mt-6">
+                        <button className="w-full px-4 py-3 bg-blue-600 text-white border-none rounded-lg text-base font-semibold flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-700 transition-colors">
                             <Plus size={20} />
                             Tạo bài viết
                         </button>
                     </div>
 
                     {/* User Profile Section */}
-                    <div style={{ 
-                        marginTop: 'auto', 
-                        paddingTop: '24px',
-                        borderTop: `1px solid ${Colors.borderPrimary}`
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            backgroundColor: Colors.bgSecondary,
-                            marginBottom: '12px'
-                        }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                backgroundColor: Colors.primary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '16px'
-                            }}>
+                    <div className="mt-auto pt-6 border-t border-gray-200">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 mb-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-base">
                                 {user?.userName?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    color: Colors.textPrimary,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                }}>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis">
                                     {user?.userName || 'User'}
                                 </div>
-                                <div style={{
-                                    fontSize: '12px',
-                                    color: Colors.textSecondary,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                }}>
+                                <div className="text-xs text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">
                                     {user?.email || ''}
                                 </div>
                             </div>
@@ -314,21 +121,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         
                         <button 
                             onClick={handleLogout}
-                            style={{
-                                width: '100%',
-                                padding: '12px 16px',
-                                backgroundColor: 'transparent',
-                                color: Colors.textSecondary,
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                            }}
+                            className="w-full px-4 py-3 bg-transparent text-gray-600 border-none rounded-lg text-sm font-medium flex items-center gap-3 cursor-pointer hover:bg-gray-100 transition-colors"
                         >
                             <LogOut size={18} />
                             Đăng xuất
@@ -338,18 +131,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </aside>
 
             {/* Main Content */}
-            <div style={{ 
-                flex: 1, 
-                marginLeft: '280px',
-                display: 'flex',
-                justifyContent: 'center'
-            }}>
-                <div style={{ 
-                    width: '100%', 
-                    maxWidth: '614px',
-                    backgroundColor: Colors.bgPrimary,
-                    minHeight: '100vh'
-                }}>
+            <div className="flex-1 ml-[280px] flex justify-center">
+                <div className="w-full max-w-[614px] bg-white min-h-screen">
                     {children}
                 </div>
             </div>

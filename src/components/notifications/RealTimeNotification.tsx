@@ -2,9 +2,7 @@
 import { useEffect, useState } from 'react';
 import useSocket from '@/hooks/useSocket';
 import { Post, Comment } from '@/types';
-import Colors from '@/constants/color';
-import TextStyles from '@/constants/textStyle';
-import { Heart, MessageCircle, UserPlus } from 'lucide-react';
+import { Heart, MessageCircle, UserPlus, X } from 'lucide-react';
 
 interface NotificationData {
     id: string;
@@ -22,7 +20,6 @@ export default function RealTimeNotification() {
     useEffect(() => {
         if (!socket) return;
 
-        // Listen for new posts
         const handleNewPost = (data: { post: Post }) => {
             const notification: NotificationData = {
                 id: `post_${data.post._id}`,
@@ -35,7 +32,17 @@ export default function RealTimeNotification() {
             addNotification(notification);
         };
 
-        // Listen for new reactions
+        const handlePostCreated = (data: Post) => {
+            const notification: NotificationData = {
+                id: `post_${data._id}`,
+                type: 'new_post',
+                title: 'Bài viết mới',
+                message: `${data.userName} vừa đăng bài viết`,
+                userAvatar: data.avatar,
+                timestamp: new Date()
+            };
+            addNotification(notification);
+        };
         const handleNewReaction = (data: { postID: string; userID: string; userName: string }) => {
             const notification: NotificationData = {
                 id: `reaction_${data.postID}_${data.userID}`,
@@ -47,7 +54,6 @@ export default function RealTimeNotification() {
             addNotification(notification);
         };
 
-        // Listen for new comments
         const handleNewComment = (data: { postID: string; comment: Comment }) => {
             const notification: NotificationData = {
                 id: `comment_${data.comment._id}`,
@@ -61,11 +67,13 @@ export default function RealTimeNotification() {
         };
 
         socket.on('emitAddPost', handleNewPost);
+        socket.on('postCreated', handlePostCreated);
         socket.on('POSTreaction', handleNewReaction);
         socket.on('emitAddComment', handleNewComment);
 
         return () => {
             socket.off('emitAddPost', handleNewPost);
+            socket.off('postCreated', handlePostCreated);
             socket.off('POSTreaction', handleNewReaction);
             socket.off('emitAddComment', handleNewComment);
         };
@@ -74,7 +82,6 @@ export default function RealTimeNotification() {
     const addNotification = (notification: NotificationData) => {
         setNotifications(prev => [notification, ...prev.slice(0, 4)]); // Keep only 5 latest
         
-        // Auto remove after 5 seconds
         setTimeout(() => {
             setNotifications(prev => prev.filter(n => n.id !== notification.id));
         }, 5000);
@@ -87,13 +94,13 @@ export default function RealTimeNotification() {
     const getNotificationIcon = (type: NotificationData['type']) => {
         switch (type) {
             case 'new_post':
-                return <MessageCircle size={16} color={Colors.primary} />;
+                return <MessageCircle size={16} className="text-blue-600" />;
             case 'new_reaction':
-                return <Heart size={16} color={Colors.danger} />;
+                return <Heart size={16} className="text-red-600" />;
             case 'new_comment':
-                return <MessageCircle size={16} color={Colors.success} />;
+                return <MessageCircle size={16} className="text-green-600" />;
             case 'new_friend':
-                return <UserPlus size={16} color={Colors.info} />;
+                return <UserPlus size={16} className="text-blue-600" />;
             default:
                 return <MessageCircle size={16} />;
         }
@@ -102,76 +109,34 @@ export default function RealTimeNotification() {
     if (notifications.length === 0) return null;
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            maxWidth: '350px'
-        }}>
+        <div className="fixed top-5 right-5 z-[1000] flex flex-col gap-2 max-w-[350px]">
             {notifications.map((notification) => (
                 <div
                     key={notification.id}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                        padding: '12px',
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: '8px',
-                        boxShadow: `0 4px 12px ${Colors.shadowMedium}`,
-                        border: `1px solid ${Colors.borderPrimary}`,
-                        animation: 'slideInRight 0.3s ease-out'
-                    }}
+                    className="flex items-start gap-3 p-3 bg-white rounded-lg shadow-lg border border-gray-200 animate-slideInRight cursor-pointer"
                     onClick={() => removeNotification(notification.id)}
                 >
                     {notification.userAvatar && (
                         <img
                             src={notification.userAvatar}
                             alt="User"
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                objectFit: 'cover'
-                            }}
+                            className="w-8 h-8 rounded-full object-cover"
                         />
                     )}
                     
-                    <div style={{ flex: 1 }}>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            marginBottom: '4px'
-                        }}>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
                             {getNotificationIcon(notification.type)}
-                            <span style={{
-                                ...TextStyles.bodyMedium,
-                                color: Colors.textPrimary,
-                                fontWeight: '600'
-                            }}>
+                            <span className="text-base text-gray-900 font-semibold">
                                 {notification.title}
                             </span>
                         </div>
                         
-                        <p style={{
-                            ...TextStyles.bodySmall,
-                            color: Colors.textSecondary,
-                            margin: '0',
-                            lineHeight: '1.3'
-                        }}>
+                        <p className="text-sm text-gray-600 m-0 leading-tight">
                             {notification.message}
                         </p>
                         
-                        <span style={{
-                            ...TextStyles.bodySmall,
-                            color: Colors.textSecondary,
-                            fontSize: '11px'
-                        }}>
+                        <span className="text-xs text-gray-600">
                             {notification.timestamp.toLocaleTimeString('vi-VN', { 
                                 hour: '2-digit', 
                                 minute: '2-digit' 
@@ -184,32 +149,12 @@ export default function RealTimeNotification() {
                             e.stopPropagation();
                             removeNotification(notification.id);
                         }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: Colors.textSecondary,
-                            cursor: 'pointer',
-                            padding: '2px',
-                            borderRadius: '4px'
-                        }}
+                        className="bg-transparent border-none text-gray-600 cursor-pointer p-0.5 rounded hover:bg-gray-100"
                     >
-                        ×
+                        <X size={16} />
                     </button>
                 </div>
             ))}
-            
-            <style jsx>{`
-                @keyframes slideInRight {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

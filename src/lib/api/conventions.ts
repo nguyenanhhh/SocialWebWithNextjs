@@ -1,55 +1,45 @@
 import { api } from './client'
-import type { Convention, ChatMessage, ApiResponse } from '@/types'
+import type { Convention, ApiResponse } from '@/types'
+
+interface Message {
+    _id: string;
+    content: string;
+    senderID: string;
+    type: string;
+    createdAt: string;
+}
 
 export const conventionsApi = {
-    // Convention CRUD
-    getConvention: (id: string) => 
-        api.get<Convention>(`/convention/${id}`),
-    
-    getConventions: (userID: string) => 
-        api.get<Convention[]>(`/convention/owner/${userID}`),
-    
-    getConventionIDs: (userID: string) => 
-        api.get<string[]>(`/convention/conventionIDs`, { userID }),
-    
-    createConvention: (data: { uids: string[]; type?: 'private' | 'group' }) => 
+    getConventions: (userId: string) =>
+        api.get<Convention[]>(`/convention/owner/${userId}`),
+
+    getConventionById: (conventionId: string) =>
+        api.get<Convention>(`/convention/${conventionId}`),
+
+    createConvention: (data: Partial<Convention>) =>
         api.post<Convention>('/convention/store', data),
-    
-    createGroupConvention: (data: { 
-        name: string; 
-        uids: string[]; 
-        avatar?: string; 
-    }) => 
+
+    createGroupConvention: (data: Partial<Convention>) =>
         api.post<Convention>('/convention/group/store', data),
-    
-    // Messages
-    sendMessage: (conventionID: string, data: {
-        senderID: string;
-        senderName: string;
-        senderAvatar?: string;
-        type: 'TEXT' | 'IMAGE' | 'VIDEO' | 'NOTIFY' | 'POLL';
-        content: string;
-        attachments?: any[];
-        pollID?: string;
-    }) => 
-        api.post<ChatMessage>(`/convention/${conventionID}`, data),
-    
-    updateMessage: (conventionID: string, messageID: string, data: {
-        content?: string;
-        action?: 'EDIT' | 'REMOVE' | 'DELETE';
-    }) => 
-        api.post<ChatMessage>(`/convention/${conventionID}/message/${messageID}`, data),
-    
-    // Group management
-    addMemberToGroup: (conventionID: string, data: { userID: string }) => 
-        api.post<Convention>(`/convention/group/${conventionID}/add`, data),
-    
-    removeMemberFromGroup: (conventionID: string, userID: string) => 
-        api.post<Convention>(`/convention/group/${conventionID}/logout/${userID}`),
-    
-    // Settings
-    updateNotifySettings: (conventionID: string, data: { 
-        notify: 'ALLOW' | 'NOT_ALLOW' | 'CUSTOM' 
-    }) => 
-        api.post<Convention>(`/convention/${conventionID}/notify`, data),
+
+    addMemberToGroup: (conventionId: string, userID: string) =>
+        api.post<ApiResponse<any>>(`/convention/group/${conventionId}/add`, { userID }),
+
+    removeMemberFromGroup: (conventionId: string, userID: string) =>
+        api.post<ApiResponse<any>>(`/convention/group/${conventionId}/logout/${userID}`),
+
+    sendMessage: (conventionId: string, data: Partial<Message>) =>
+        api.post<Message>(`/convention/${conventionId}`, data),
+
+    updateMessage: (conventionId: string, messageId: string, data: Partial<Message>) =>
+        api.post<Message>(`/convention/${conventionId}/message/${messageId}`, data),
+
+    updateNotifySettings: (conventionId: string, settings: any) =>
+        api.post<ApiResponse<any>>(`/convention/${conventionId}/notify`, settings),
+
+    getConventionID: () =>
+        api.get<{ conventionID: string }>('/convention/conventionID'),
+
+    getConventionIDs: () =>
+        api.get<string[]>('/convention/conventionIDs')
 }

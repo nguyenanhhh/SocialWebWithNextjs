@@ -27,10 +27,18 @@ apiClient.interceptors.response.use(
         return response
     },
     (error) => {
+        console.error('HTTP Error', error)
+
+        if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            console.error('API Error: AxiosError')
+            throw new Error('Kết nối timeout. Vui lòng thử lại.')
+        }
+
         if (error.response?.status === 401) {
             localStorage.removeItem('authToken')
-            window.location.href = '/auth/login'
+            window.location.href = '/login'
         }
+
         return Promise.reject(error)
     }
 )

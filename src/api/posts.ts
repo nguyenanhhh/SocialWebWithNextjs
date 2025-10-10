@@ -8,8 +8,8 @@ export interface GetUserPostsParams {
 }
 
 export const postsApi = {
-    getNewfeed(userID: string) {
-        return http.get<Post[]>(`/post/newfeed/${userID}`)
+    getNewfeed(userID: string, params?: { page?: number; limit?: number }) {
+        return http.get<PaginatedResponse<Post>>(`/post/newfeed/${userID}`, { params })
     },
     getUserPosts(params?: GetUserPostsParams) {
         return http.get<PaginatedResponse<Post>>(`/post/user`, { params })
@@ -35,7 +35,6 @@ export const postsApi = {
     create(payload: Partial<Post>) {
         return http.post<Post>(`/post/store`, payload)
     },
-    // Tạo bài viết với file upload
     createPost(payload: CreatePostForm) {
         const formData = new FormData()
         formData.append('content', payload.content)

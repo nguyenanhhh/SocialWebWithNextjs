@@ -22,9 +22,9 @@ export default function Profile() {
   if (!user) return <div>User not found.</div>;
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="p-8">
       <h1>Profile</h1>
-      <img src={user.avatar} alt="Avatar" style={{ width: 120, borderRadius: "50%" }} />
+      <img src={user.avatar} alt="Avatar" className="w-[120px] rounded-full" />
       <h2>{user.username}</h2>
       <p>{user.bio}</p>
       <p>Email: {user.email}</p>

@@ -96,12 +96,12 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         const validFiles = files.filter(file => {
-            // Kiểm tra loại file
+            // kiểm tra loại file
             if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
                 showError('Chỉ cho phép file ảnh và video');
                 return false;
             }
-            // Kiểm tra kích thước
+            // kt kích thước
             if (file.size > 10 * 1024 * 1024) {
                 showError('File quá lớn (tối đa 10MB)');
                 return false;
@@ -110,7 +110,7 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
         });
 
         setAttachments(prev => [...prev, ...validFiles]);
-        // Reset input để có thể chọn cùng file lần nữa
+        // reset input để có thể chọn cùng file lần nữa
         if (e.target) {
             e.target.value = '';
         }
@@ -135,110 +135,44 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
     };
 
     return (
-        <div style={{
-            backgroundColor: Colors.bgPrimary,
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px',
-            boxShadow: `0 2px 4px ${Colors.shadowLight}`
-        }}>
+        <div className="bg-white rounded-xl p-5 mb-5 shadow-sm">
             <form onSubmit={handleSubmit}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
-                    <div
-                        style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            backgroundColor: Colors.primary,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: Colors.textInverse,
-                            fontWeight: 'bold'
-                        }}
-                    >
+                <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
                         T
                     </div>
 
-                    <div style={{ flex: 1 }}>
+                    <div className="flex-1">
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Bạn đang nghĩ gì?"
-                            style={{
-                                width: '100%',
-                                minHeight: '100px',
-                                padding: '12px',
-                                border: `1px solid ${Colors.borderPrimary}`,
-                                borderRadius: '8px',
-                                resize: 'vertical',
-                                fontSize: '16px',
-                                fontFamily: 'inherit',
-                                backgroundColor: Colors.bgSecondary,
-                                color: Colors.textPrimary,
-                                outline: 'none'
-                            }}
+                            className="w-full min-h-[100px] p-3 border border-gray-200 rounded-lg resize-vertical text-base font-sans bg-gray-50 text-gray-900 focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
                         />
                     </div>
                 </div>
 
                 {attachments.length > 0 && (
-                    <div style={{ marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
                             {attachments.map((file, index) => (
                                 <div
                                     key={index}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px 12px',
-                                        backgroundColor: Colors.bgSecondary,
-                                        borderRadius: '6px',
-                                        border: `1px solid ${Colors.borderPrimary}`,
-                                        minWidth: '200px'
-                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-200 min-w-[200px]"
                                 >
                                     {getFileIcon(file)}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{
-                                            fontSize: '14px',
-                                            color: Colors.textPrimary,
-                                            fontWeight: '500',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-sm text-gray-900 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                                             {file.name}
                                         </div>
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: Colors.textSecondary,
-                                            marginTop: '2px'
-                                        }}>
+                                        <div className="text-xs text-gray-600 mt-0.5">
                                             {formatFileSize(file.size)}
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => removeAttachment(index)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: Colors.textSecondary,
-                                            cursor: 'pointer',
-                                            padding: '4px',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = Colors.bgPrimary;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'transparent';
-                                        }}
+                                        className="bg-transparent border-none text-gray-600 cursor-pointer p-1 rounded flex items-center justify-center hover:bg-white transition-colors"
                                     >
                                         ×
                                     </button>
@@ -248,23 +182,12 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
                     </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-2">
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '8px 12px',
-                                backgroundColor: 'transparent',
-                                border: `1px solid ${Colors.borderPrimary}`,
-                                borderRadius: '6px',
-                                color: Colors.primary,
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-transparent border border-gray-200 rounded-md text-blue-600 cursor-pointer text-sm hover:bg-gray-50 transition-colors"
                         >
                             <Image size={16} />
                             Ảnh/Video
@@ -272,18 +195,7 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
 
                         <button
                             type="button"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '8px 12px',
-                                backgroundColor: 'transparent',
-                                border: `1px solid ${Colors.borderPrimary}`,
-                                borderRadius: '6px',
-                                color: Colors.primary,
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-transparent border border-gray-200 rounded-md text-blue-600 cursor-pointer text-sm hover:bg-gray-50 transition-colors"
                         >
                             <Smile size={16} />
                             Cảm xúc
@@ -291,36 +203,18 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
 
                         <button
                             type="button"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '8px 12px',
-                                backgroundColor: 'transparent',
-                                border: `1px solid ${Colors.borderPrimary}`,
-                                borderRadius: '6px',
-                                color: Colors.primary,
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-transparent border border-gray-200 rounded-md text-blue-600 cursor-pointer text-sm hover:bg-gray-50 transition-colors"
                         >
                             <MapPin size={16} />
                             Vị trí
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="flex items-center gap-3">
                         <select
                             value={scope}
                             onChange={(e) => setScope(e.target.value as keyof typeof SCOPE)}
-                            style={{
-                                padding: '6px 8px',
-                                border: `1px solid ${Colors.borderPrimary}`,
-                                borderRadius: '4px',
-                                backgroundColor: Colors.bgSecondary,
-                                color: Colors.textPrimary,
-                                fontSize: '14px'
-                            }}
+                            className="px-2 py-1.5 border border-gray-200 rounded bg-gray-50 text-gray-900 text-sm focus:outline-none focus:border-blue-600"
                         >
                             <option value={SCOPE.PUBLIC}>Công khai</option>
                             <option value={SCOPE.FRIEND}>Bạn bè</option>
@@ -343,7 +237,7 @@ export default function CreatePost({ onPostCreated, onPostCreatedImmediate, grou
                     multiple
                     accept="image/*,video/*"
                     onChange={handleFileSelect}
-                    style={{ display: 'none' }}
+                    className="hidden"
                 />
             </form>
         </div>

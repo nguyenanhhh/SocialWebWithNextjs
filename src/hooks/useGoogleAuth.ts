@@ -31,7 +31,7 @@ export const useGoogleAuth = () => {
       }
 
       console.log('Sending user data to backend:', userData)
-      console.log('Backend URL:', 'http://172.18.23.6:8080')
+      console.log('Backend URL:', process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080')
 
       try {
         // Gọi API create user từ backend

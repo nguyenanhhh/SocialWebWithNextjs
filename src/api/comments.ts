@@ -9,10 +9,13 @@ export const commentsApi = {
         return http.post<Comment>(`/comment/store`, payload)
     },
     edit(id: string, payload: Partial<Comment>) {
-        return http.put<Comment>(`/comment/${id}/edit`, payload)
+        return http.put<Comment>(`/comment/${id}/update`, payload)
     },
     delete(id: string) {
         return http.delete<Comment>(`/comment/${id}/delete`)
+    },
+    react(id: string, userID: string) {
+        return http.put<{ status: string; data: boolean }>(`/comment/${id}/react`, { userID })
     },
 }
 

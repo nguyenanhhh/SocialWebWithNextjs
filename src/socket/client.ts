@@ -2,16 +2,16 @@ import { io, Socket } from 'socket.io-client'
 import { config } from '@/lib/config'
 import type { SocketEvents } from '@/types'
 
-// Tạo socket instance duy nhất
 const socket: Socket<SocketEvents> = io(config.socketUrl, {
-    transports: ['websocket'],
+    transports: ['websocket', 'polling'],
     withCredentials: true,
-    autoConnect: true, // Tự động kết nối
+    autoConnect: true,
     timeout: 20000,
     forceNew: false,
     reconnection: true,
     reconnectionAttempts: 5,
-    reconnectionDelay: 1000
+    reconnectionDelay: 1000,
+    upgrade: true
 })
 
 export function getSocket(): Socket<SocketEvents> {
@@ -20,8 +20,6 @@ export function getSocket(): Socket<SocketEvents> {
 
 export function connectSocket(userID: string): Socket<SocketEvents> {
     const socketInstance = getSocket()
-
-    // setup listeners một lần
     if (!socketInstance.hasListeners('connect')) {
         socketInstance.on('connect', () => {
             console.log('Socket connected:', socketInstance.id)
@@ -39,25 +37,20 @@ export function connectSocket(userID: string): Socket<SocketEvents> {
         socketInstance.on('error' as any, (error: any) => {
             console.error('Socket error:', error)
         })
-
-        // Debug: Log tất cả events được emit
         socketInstance.onAny((eventName, ...args) => {
             console.log('Socket event received:', eventName, args)
         })
     }
 
-    // Kết nối nếu chưa connected
     if (!socketInstance.connected) {
         console.log('Connecting socket for user:', userID)
         socketInstance.connect()
     }
 
-    // Emit connection event sau khi kết nối
     if (socketInstance.connected) {
         console.log('Socket already connected, emitting connection event')
         socketInstance.emit('connection', { data: { userID } } as any)
     } else {
-        // Nếu chưa connected, đợi event connect
         socketInstance.once('connect', () => {
             socketInstance.emit('connection', { data: { userID } } as any)
         })

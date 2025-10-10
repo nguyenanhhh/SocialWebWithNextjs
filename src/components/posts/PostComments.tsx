@@ -39,7 +39,7 @@ function NestedReply({
     loading, 
     formatTime 
 }: NestedReplyProps) {
-    const marginLeft = reply.level * 16; // 16px per level
+    const marginLeft = reply.level * 16;
     
     return (
         <div className="space-y-2" style={{ marginLeft: `${marginLeft}px` }}>

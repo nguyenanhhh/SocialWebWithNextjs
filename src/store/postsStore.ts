@@ -7,7 +7,6 @@ interface PostsStoreState {
     loading: boolean
     error: string | null
 
-    // Actions
     setPosts: (posts: Post[]) => void
     addPost: (post: Post) => void
     updatePost: (postId: string, updates: Partial<Post>) => void
@@ -15,13 +14,9 @@ interface PostsStoreState {
     setCurrentPost: (post: Post | null) => void
     setLoading: (loading: boolean) => void
     setError: (error: string | null) => void
-
-    // Reactions
     addReaction: (postId: string, reaction: Reaction) => void
     removeReaction: (postId: string, userId: string) => void
     updateReactionCount: (postId: string, delta: number) => void
-
-    // Comments
     addComment: (postId: string, comment: Comment) => void
     updateComment: (postId: string, commentId: string, updates: Partial<Comment>) => void
     removeComment: (postId: string, commentId: string) => void
@@ -91,8 +86,7 @@ export const usePostsStore = create<PostsStoreState>((set, get) => ({
     })),
 
     updateComment: (postId, commentId, updates) => {
-        // This would need to be implemented if we store comments in the store
-        // For now, comments are managed locally in components
+       
     },
 
     removeComment: (postId, commentId) => set((state) => ({

@@ -1,7 +1,5 @@
 "use client";
 import { Reaction } from '@/types';
-import Colors from '@/constants/color';
-import TextStyles from '@/constants/textStyle';
 
 interface PostReactionsProps {
     reactions: Reaction[];
@@ -21,45 +19,21 @@ export default function PostReactions({ reactions }: PostReactionsProps) {
         .slice(0, 3);
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            backgroundColor: Colors.bgSecondary,
-            borderRadius: '6px',
-            border: `1px solid ${Colors.borderPrimary}`
-        }}>
+        <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
             {popularReactions.map(([emoji, reactionList]) => (
                 <div
                     key={emoji}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '4px 8px',
-                        backgroundColor: Colors.bgPrimary,
-                        borderRadius: '4px',
-                        border: `1px solid ${Colors.borderPrimary}`
-                    }}
+                    className="flex items-center gap-1 px-2 py-1 bg-white rounded border border-gray-200"
                 >
-                    <span style={{ fontSize: '16px' }}>{emoji}</span>
-                    <span style={{
-                        ...TextStyles.bodySmall,
-                        color: Colors.textSecondary,
-                        fontWeight: '500'
-                    }}>
+                    <span className="text-base">{emoji}</span>
+                    <span className="text-xs text-gray-600 font-medium">
                         {reactionList.length}
                     </span>
                 </div>
             ))}
 
             {reactions.length > 0 && (
-                <span style={{
-                    ...TextStyles.bodySmall,
-                    color: Colors.textSecondary,
-                    marginLeft: '4px'
-                }}>
+                <span className="text-xs text-gray-600 ml-1">
                     {reactions.length} lượt thích
                 </span>
             )}
